@@ -1,4 +1,4 @@
-space	start	end	strand
+chrom	start	end	strand
 chr21	9722436	9722471	+
 chr21	9723131	9723166	-
 chr21	9723381	9723416	+

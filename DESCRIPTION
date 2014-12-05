@@ -4,11 +4,22 @@ Title: Probabilistic inference of ChIP-seq
 Version: 2.3.05
 Author: Xuekui Zhang <xzhang@stat.ubc.ca>, Raphael Gottardo <rgottard@fhcrc.org>
 Maintainer: Renan Sauteraud <rsautera@fhcrc.org>
-Depends: R (>= 2.14.0), BiocGenerics (>= 0.1.3)
-Imports: methods, stats4, IRanges, GenomicRanges,
-         graphics, grDevices, stats, Rsamtools
-Suggests: ShortRead, rtracklayer, parallel
-Description: Probabilistic inference of ChIP-Seq using an empirical Bayes mixture model approach. 
+Depends:
+    R (>= 3.0.0),
+    methods,
+    stats4,
+    BiocGenerics
+Imports:
+    IRanges,
+    GenomicRanges,
+    parallel,
+    graphics,
+    tools,
+    GenomicAlignments
+Suggests:
+    ShortRead
+Description: Probabilistic inference of ChIP-Seq using an empirical Bayes
+    mixture model approach.
 biocViews: Clustering, Visualization, Sequencing, ChIPseq
 License: Artistic-2.0
 Packaged: 2012-03-31 07:09:18 UTC; biocbuild

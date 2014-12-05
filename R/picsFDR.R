@@ -1,25 +1,41 @@
-picsFDR<-function(picsIP,picsCont,filter=list(delta=c(0,Inf),se=c(0,Inf),sigmaSqF=c(0,Inf),sigmaSqR=c(0,Inf)))
-{
-  score1<-score(picsIP)
-  delta1<-delta(picsIP)
-  se1<-se(picsIP)
-  sf1<-sigmaSqF(picsIP)
-  sr1<-sigmaSqR(picsIP)
+#' Estimate the FDR.
+#' 
+#' Estimate the false detection rate for an object of class \code{pics} or
+#' \code{picsList}.
+#' 
+#' 
+#' @param picsIP An object of class \code{pics} or \code{picsList} containing
+#' the informations for the IP reads
+#' @param picsCont An object of class \code{pics} or \code{picsList} containing
+#' the informations for the control reads
+#' @param filter filter
+#' @return A 3 columns \code{data.frame} with the following columns: FDR,
+#' score, N.
+#' @author Xuekui Zhang
+#' @seealso \code{\linkS4class{picsList}} \code{\linkS4class{pics}}
+#' @keywords functions
+#' @export picsFDR
+picsFDR <- function(picsIP, picsCont, filter = list(delta = c(0, Inf), se = c(0, Inf),
+                                                    sigmaSqF = c(0, Inf), sigmaSqR = c(0, Inf))){
+  score1 <- score(picsIP)
+  delta1 <- delta(picsIP)
+  se1 <- se(picsIP)
+  sf1 <- sigmaSqF(picsIP)
+  sr1 <- sigmaSqR(picsIP)
 
-  score2<-score(picsCont)
-  delta2<-delta(picsCont)
-  se2<-se(picsCont)
-  sf2<-sigmaSqF(picsCont)
-  sr2<-sigmaSqR(picsCont)
+  score2 <- score(picsCont)
+  delta2 <- delta(picsCont)
+  se2 <- se(picsCont)
+  sf2 <- sigmaSqF(picsCont)
+  sr2 <- sigmaSqR(picsCont)
 
   # Normalizing ratio to account for the fact that the control and treatment samples might not have
   # the same number of reads
   # ratio<-picsIP@Nc/picsIP@N
   # I now standardized the fdr when I compute scores.
-  ratio<-1
+  ratio <- 1
 
-  if(!is.null(filter))
-  {
+  if(!is.null(filter)){
     ### Filter based on delta
     ind1.1<-delta1>filter$delta[1] & delta1<filter$delta[2]
     ind1.2<-sf1>filter$sigmaSqF[1] & sf1<filter$sigmaSqF[2]
@@ -34,9 +50,7 @@ picsFDR<-function(picsIP,picsCont,filter=list(delta=c(0,Inf),se=c(0,Inf),sigmaSq
     ind2.4<-se2>filter$se[1] & se2<filter$se[2]
 
     ind2<-ind2.1&ind2.2&ind2.3&ind2.4
-  }
-  else
-  {
+  } else{
     ind1<-rep(TRUE,length(score1))
     ind2<-rep(TRUE,length(score2))
   }
@@ -51,8 +65,7 @@ picsFDR<-function(picsIP,picsCont,filter=list(delta=c(0,Inf),se=c(0,Inf),sigmaSq
   n<-length(FDR)
   i<-2
   
-  while((i<n) & (FDR[i-1]>0))
-  {
+  while((i<n) & (FDR[i-1]>0)){
     # I make the FDR monotonic
     # FDR[i]<-min(1,max(FDR[i+1],sum(score2>scoreVector[i],na.rm=TRUE)/sum(ratio*score1>scoreVector[i],na.rm=TRUE)))
     FDR[i]<-min(1,min(FDR[i-1],sum(score2>scoreVector[i],na.rm=TRUE)/sum(score1>scoreVector[i],na.rm=TRUE)))    
@@ -60,4 +73,4 @@ picsFDR<-function(picsIP,picsCont,filter=list(delta=c(0,Inf),se=c(0,Inf),sigmaSq
     i<-i+1
   }  
   data.frame(FDR=FDR[1:i],score=scoreVector[1:i],N=N[1:i])
-}#end of function FDRs
+}

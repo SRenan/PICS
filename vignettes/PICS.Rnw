@@ -1,18 +1,16 @@
+%\VignetteEngine{knitr::knitr}
 %\VignetteIndexEntry{The PICS users guide}
 %\VignetteDepends{PICS,parallel}
 %\VignetteKeywords{Preprocessing, ChIP-Seq, Sequencing}
 %\VignettePackage{PICS}
 \documentclass[a4paper]{article}
-\usepackage{underscore}
 \usepackage{hyperref}
-%\usepackage{url}
-%\usepackage{color, pdfcolmk}
-%\usepackage[authoryear,round]{natbib}
-%\bibliographystyle{plainnat}
+\usepackage[hmargin=2.5cm, vmargin=3cm]{geometry}
 
-
-%\newcommand{\scscst}{\scriptscriptstyle}
-%\newcommand{\scst}{\scriptstyle}
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(tidy=FALSE)
+@
 
 \title{PICS: Probabilistic Inference for ChIP-Seq}
 \author{Xuekui Zhang\footnote{ubcxzhang@gmail.com} and Raphael
@@ -73,7 +71,7 @@ A typical PICS analysis consists of the following steps:
 
 As with any package, you first need to load it with the following command
 
-<<Loading PICS>>=
+<<Loading PICS, message=FALSE>>=
 library(PICS)
 @
 
@@ -82,7 +80,7 @@ The first step of the PICS pipeline consists of converting the aligned reads (fr
 
 In addition to the IP and Control datasets, we use another argument consisting of a mappability profile for the genome interrogated. For each chromosome, a mappability profile for a specific read length consists of a vector of zeros and ones that gives an estimated read mappability `score' for each base pair in the chromosome. A score of one at a position means that we should be able to align a read of that length uniquely at that position, while a score of zero indicates that no read of that length should be uniquely alignable at that position. As noted, reads that cannot be mapped to unique genomic locations are typically discarded. For convenience, and because transitions between mappable and non-mappable regions are typically much shorter than these regions, we compactly summarize each chromosome's mappability profile as a disjoint union of non-mappable intervals that specify only zero-valued profile. We store this information as a bed file where each line correspond a non-mappable intervals. PICS makes use of such mappability profiles to estimate the reads that are missing because they could not be aligned. Mappability profiles for a range of reads lengths and species are available from:
 
-http:/wiki.rglab.org/index.php?title=Public:Mappability_Profile
+http:/wiki.rglab.org/index.php?title=Public:Mappability\_Profile
 
 To make your own mappability profiles, use the script available at:
 
@@ -93,20 +91,17 @@ Once the data have been read, we can create the `GRanges' object, which stores t
 
 In this documentation, the path for the data is:  .../PICS/inst/extdata folder.
 <<Reading the data>>=
-path<-system.file("extdata",package="PICS")
-dataIP<-read.table(file.path(path,"Treatment_tags_chr21_sort.bed"),header=TRUE,
-colClasses=c("factor","integer","integer","factor"))
+datadir <- system.file("extdata",package="PICS")
+dataIP<-read.table(file.path(datadir, "Treatment_tags_chr21_sort.bed"), header=TRUE)
 dataIP<-as(dataIP,"GRanges")
 
-dataCont<-read.table(file.path(path,"Input_tags_chr21_sort.bed"),header=TRUE
-,colClasses=c("factor","integer","integer","factor"))
+dataCont<-read.table(file.path(datadir, "Input_tags_chr21_sort.bed"), header=TRUE)
 dataCont<-as(dataCont,"GRanges")
 @
 
 <<Reading the mappability profile>>=
-map<-read.table(file.path(path,"mapProfileShort"),header=TRUE,
-colClasses=c("factor","integer","integer","NULL"))
-map<-as(map,"GRanges")
+map <- read.table(file.path(datadir, "mapProfileShort"), header=TRUE)
+map <- as(map, "GRanges")
 @
 
 
@@ -134,55 +129,64 @@ library(parallel)
 In our case, assuming that we have already segmented the genome using \texttt{segmentPICS}, we can proceed with the following command:
 
 <<PICS analysis>>=
-pics<-PICS(seg, nCores=2)
+pics <- PICS(seg, nCores = 2)
 @
 
 \subsection{FDR estimation}
 In order to estimate the FDR, we need to rerun our analysis after swapping the IP and control samples. Note that this requires the presence of a control sample. We proceed with the following commands to compute the FDR after removing binding site estimates with noisy parameters as specify by the filter. 
 
 <<FDR estimation>>=
-segC<-segmentPICS(dataCont,dataC=dataIP,map=map,minReads=1)
-picsC<-PICS(segC)
-fdr<-picsFDR(pics,picsC,filter=list(delta=c(50,Inf),se=c(0,50),
-sigmaSqF=c(0,22500),sigmaSqR=c(0,22500)))
+segC <- segmentPICS(dataCont, dataC = dataIP, map = map, minReads = 1)
+picsC <- PICS(segC)
+fdr <- picsFDR(pics, picsC, filter = list(delta = c(50, Inf), se = c(0, 50),
+                          sigmaSqF = c(0, 22500), sigmaSqR = c(0, 22500)))
 @
 
 Then once the FDR has been estimated, one can visualize the FDR as a function of the score to pick a threshold that would lead to the desired FDR. 
 
-<<plot-FDR1,fig=TRUE>>=
-plot(pics,picsC,xlim=c(2,8),ylim=c(0,.2),filter=list(delta=c(50,300),
-se=c(0,50),sigmaSqF=c(0,22500),sigmaSqR=c(0,22500)),type="l")
+<<plot-FDR1>>=
+plot(pics, picsC, xlim = c(2, 8), ylim = c(0, .2),
+  filter = list(delta = c(50, 300), se = c(0, 50), sigmaSqF = c(0, 22500),
+  sigmaSqR = c(0, 22500)), type = "l")
 @
 
 You can also visualize the FDR as a function of the number of regions.
 
-<<plot-FDR2,fig=TRUE>>=
+<<plot-FDR2>>=
 plot(fdr[,c(3,1)])
 @
 
-\section{Result output}
-
-To facilitate data processing and data output, we make use of the \texttt{IRanges} package to summarize our results as `RangedData' objects. The resulting `RangedData' objects can then be analyzed with the \texttt{IRanges} package and/or exported to bed/wig files with the \texttt{rtracklayer} package. In each case, we can make use of filters noisy regions and or regions with too low of score. In particular the \texttt{picsFDR} function can be used to set the score threshold leading to the desired `FDR'.
-
-\subsection{Writing enriched regions to BED files}
-
-<<Create RangedData data object of enriched regions>>=
-myFilter=list(delta=c(50,300),se=c(0,50),sigmaSqF=c(0,22500),sigmaSqR=c(0,22500))
-rdBed<-makeRangedDataOutput(pics,type="bed",filter=c(myFilter,list(score=c(1,Inf))))
-@
-The following command will create the appropriate bed files, and because it requires the \texttt{rtracklayer} package, we do not run it here but simply displayed for your purpose.
-<<Create the bed file,eval=FALSE>>=
-library(rtracklayer)
-export(rdBed,"myfile.bed")
+\section{Output}
+Any \texttt{picsList} object can be coerced into a \texttt{data.frame} for 
+visualization and manipulation of the results.
+<<as.data.frame>>=
+df <- as.data.frame(pics)
+head(df)
 @
 
-\subsection{Writing density scores to WIG files}
-The following command will create the appropriate `RangedData' and corresponding wig file, and because it requires the \texttt{rtracklayer} package, we do not run it here but simply displayed for your purpose.
 
-<<Create the wig file,eval=FALSE>>=
-rdBed<-makeRangedDataOutput(pics,type="wig",filter=c(myFilter,list(score=c(1,Inf))))
-export(rdBed,"myfile.wig")
-@
+
+% To facilitate data processing and data output, we make use of the \texttt{IRanges} package to summarize our results as `RangedData' objects. The resulting `RangedData' objects can then be analyzed with the \texttt{IRanges} package and/or exported to bed/wig files with the \texttt{rtracklayer} package. In each case, we can make use of filters noisy regions and or regions with too low of score. In particular the \texttt{picsFDR} function can be used to set the score threshold leading to the desired `FDR'.
+% 
+% \subsection{Writing enriched regions to BED files}
+% 
+% <<Create RangedData data object of enriched regions>>=
+% myFilter=list(delta=c(50,300),se=c(0,50),sigmaSqF=c(0,22500),sigmaSqR=c(0,22500))
+% #rdBed<-makeRangedDataOutput(pics,type="bed",filter=c(myFilter,list(score=c(1,Inf))))
+% @
+% The following command will create the appropriate bed files, and because it requires the \texttt{rtracklayer} package, we do not run it here but simply displayed for your purpose.
+% <<Create the bed file,eval=FALSE>>=
+% library(rtracklayer)
+% #export(rdBed,"myfile.bed")
+% @
+% 
+% \subsection{Writing density scores to WIG files}
+% The following command will create the appropriate `RangedData' and corresponding wig file, and because it requires the \texttt{rtracklayer} package, we do not run it here but simply displayed for your purpose.
+% 
+% <<Create the wig file,eval=FALSE>>=
+% #rdBed<-makeRangedDataOutput(pics,type="wig",filter=c(myFilter,list(score=c(1,Inf))))
+% #export(rdBed,"myfile.wig")
+% @
 
 
 \end{document}
