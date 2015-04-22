@@ -144,6 +144,10 @@ segReadsList<-function(List,paraSW,N,Nc){
 #' delta,pics-method
 #' se
 #' se,pics-method
+#' seF
+#' seF,pics-method
+#' seR
+#' seR,pics-method
 #' sigmaSqF
 #' sigmaSqF,pics-method
 #' sigmaSqR
@@ -194,6 +198,8 @@ setClass("pics",
 #' sigmaSqF,picsError-method
 #' sigmaSqR,picsError-method
 #' se,picsError-method
+#' seF,picsError-method
+#' seR,picsError-method
 #' @export
 setClass("picsError",
          representation(errorCode = "character"),
@@ -241,6 +247,8 @@ setClass("picsError",
 #' sigmaSqF,picsList-method
 #' sigmaSqR,picsList-method
 #' se,picsList-method
+#' seF,picsList-method
+#' seR,picsList-method
 #' [,picsList,ANY,ANY-method
 #' [[,picsList,ANY,ANY-method
 #' @export

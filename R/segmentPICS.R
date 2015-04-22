@@ -5,11 +5,11 @@
 #' reverse reads. These candidate regions will then be processed by PICS.
 #' 
 #' @aliases segmentPICS segReadsGeneric
-#' @param data A \code{GRanges} object containing the IP reads.
+#' @param data A file or object containing the IP reads.
 #' See details for more information on how to set up the data.
-#' @param dataC A \code{GRanges} object containing the control
+#' @param dataC A file or object containing the control
 #' reads. Set to NULL by default, i.e. no control.
-#' @param map A `RangedData' object containing the mappability profiles. Set to
+#' @param map A file or object containing the mappability profiles. Set to
 #' NULL by default, i.e. no profiles.
 #' @param minReads The minimum number of F/R reads to be present in the sliding
 #' window.
@@ -22,6 +22,11 @@
 #' @param minLregion The minimum length.
 #' @return An object of class \code{segReadsList} containing the results for
 #' all regions pre-processed.
+#' 
+#' @details
+#' The input of data, dataC and map can be an object of class \code{GRanges} or 
+#' \code{GAlignments}. Or a bed or bam file.
+#' 
 #' @author Renan Sauteraud
 #' @seealso \code{\linkS4class{segReadsList}}
 #' @references X. Zhang, G. Robertson, M. Krzywinski, K. Ning, A. Droit, S.
@@ -42,7 +47,7 @@
 #' @importFrom GenomicAlignments readGAlignmentsFromBam
 #' @importClassesFrom GenomicAlignments GAlignments
 #' @export
-segmentPICS<-function(data, dataC = NULL, map = NULL, minReads = 2,
+segmentPICS <- function(data, dataC = NULL, map = NULL, minReads = 2,
                       minReadsInRegion = 3, jitter = FALSE,
                       maxLregion = 0, minLregion = 100){
   

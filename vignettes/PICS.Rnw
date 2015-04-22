@@ -111,7 +111,7 @@ map <- as(map, "GRanges")
 We segment the genome into candidate regions by pre-processing bidirectional aligned reads data from a single ChIP-Seq experiment to detect candidate regions with a minimum number of forward and reverse reads. These candidate regions will then be processed by PICS. The `minReads' parameter will heavily influence the number of candidate regions returned. In principle, it is better to use a small value for `minReads' in order not to miss any true binding sites. However, a value too small will likely return many false positive regions, which can result a longer computing time for the \texttt{PICS} function.  If a control sample is available you may also chose a value of `minReads' that would give you a ratio of the number of candidate regions in the control over the number of candidate regions in the IP of about 25\%. A ratio larger than 25\% would most likely result in a large FDR when using \texttt{picsFDR}, and therefore it is not necessary to use too low of a threshold. See below for an illustration.  \newline
 
 <<Genome segmentation>>=
-seg<-segmentPICS(dataIP, dataC=dataCont, map=map, minReads=1)
+seg <- segmentPICS(dataIP, dataC=dataCont, map=map, minReads=1)
 @
 
 

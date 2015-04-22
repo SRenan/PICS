@@ -22,7 +22,7 @@
 #' @return A \code{GRanges} object
 #' 
 #' @author Renan Sauteraud
-#' @seealso \code{\link{postPING}}, \code{\link{picsFDR}}
+#' @seealso \code{\link{picsFDR}}
 #' 
 #' @importClassesFrom IRanges IRanges
 #' @importFrom IRanges IRanges
@@ -38,8 +38,8 @@ makeGRanges <- function(obj, type = "fixed",
     mu      <- mu(obj)
     delta   <- delta(obj)
     se      <- se(obj)
-    seF     <- PICS:::seF(obj)
-    seR     <- PICS:::seR(obj)
+    seF     <- seF(obj)
+    seR     <- seR(obj)
     sf      <- sigmaSqF(obj)
     sr      <- sigmaSqR(obj)
     chromosome <- chromosome(obj)
